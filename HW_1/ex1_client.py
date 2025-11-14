@@ -212,7 +212,7 @@ def command_loop(sock):
 
 
 def main():
-    hostname, port = parse_args()
+    hostname, port = parse_args() #TODO: host can be name (localhost) or IP
 
     sock = connect_to_server(hostname, port)
     if sock is None:
