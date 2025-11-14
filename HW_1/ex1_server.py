@@ -45,7 +45,7 @@ def load_users(users_file):
                 line = line.strip()
                 if not line:
                     continue
-                parts = line.split("\t")
+                parts = line.split()
                 if len(parts) != 2:
                     # ignore malformed lines
                     continue
@@ -160,7 +160,7 @@ def main():
             username = state["pending_username"]
 
             # Check credentials
-            if username in users and users[username] == password:
+            if username in users.keys() and users[username] == password:
                 state["logged_in"] = True
                 state["username"] = username
                 state["login_stage"] = None
