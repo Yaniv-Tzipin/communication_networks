@@ -2,6 +2,7 @@
 import socket
 import sys
 
+
 DEFAULT_HOST = "localhost"
 DEFAULT_PORT = 1337
 
@@ -116,6 +117,7 @@ def handle_login(sock):
             print("Protocol error during login. Closing.")
             return False
 
+
 def is_valid_command(cmd):
     """
     Validate the basic format of a command according to the assignment.
@@ -206,9 +208,6 @@ def command_loop(sock):
             break
 
         print(response)
-
-
-
 
 
 def main():
