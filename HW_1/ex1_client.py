@@ -36,26 +36,6 @@ def parse_args():
     sys.exit(1)
 
 
-def recv_line(sock):
-    """
-    Receive a single line (ending with '\n') from the socket.
-    Returns the line as a string without the trailing '\n'.
-    Returns '' if the connection is closed.
-    """
-    #TODO: is there an elegant way to do this?
-    chunks = []
-    while True:
-        data = sock.recv(1)
-        if not data:
-            # Connection closed
-            return ""
-        ch = data.decode()
-        if ch == "\n":
-            break
-        chunks.append(ch)
-    return "".join(chunks)
-
-
 def connect_to_server(hostname, port):
     """
     Create a TCP socket and connect to the server.
