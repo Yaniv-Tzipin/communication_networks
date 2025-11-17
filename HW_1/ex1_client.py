@@ -12,26 +12,27 @@ def parse_args():
     Parse command-line arguments.
     Valid:
       ex1_client.py
-      ex1_client.py hostname
-      ex1_client.py hostname port
+      ex1_client.py hostname(string/IP)
+      ex1_client.py hostname(string/IP) port(int)
     """
+    # If the hostname is illegal, 'connect' function fails
     argc = len(sys.argv)
 
     if argc == 1:
         return DEFAULT_HOST, DEFAULT_PORT
 
+    # If sys.argv[1] is a port number, 'connect' function fails
     if argc == 2:
         return sys.argv[1], DEFAULT_PORT
 
     if argc == 3:
         try:
             return sys.argv[1], int(sys.argv[2])
-        #TODO: should we handle it this way?
         except ValueError:
             print("Error: port must be an integer.")
             sys.exit(1)
 
-    print("Usage: ex1_client.py [hostname [port]]")
+    print("Error: incorrect usage. Correct usage - ex1_client.py [hostname [port]].")
     sys.exit(1)
 
 
@@ -41,7 +42,7 @@ def recv_line(sock):
     Returns the line as a string without the trailing '\n'.
     Returns '' if the connection is closed.
     """
-    #TODO: is there an ellegant way to do this?
+    #TODO: is there an elegant way to do this?
     chunks = []
     while True:
         data = sock.recv(1)
@@ -69,7 +70,7 @@ def connect_to_server(hostname, port):
         return None
 
 
-def handle_login(sock):
+def handle_login(sock, sock_file):
     """
     Perform the login phase.
     - Receive welcome line
@@ -78,10 +79,9 @@ def handle_login(sock):
     Returns True if login succeeded, False otherwise.
     """
 
-    welcome = recv_line(sock)
+    welcome = sock_file.readline().strip()
     if not welcome:
-        #TODO: check if this should be the print
-        print("Server closed the connection.")
+        print("Error: didn't receive welcome message from the server.")
         return False
     print(welcome)
 
@@ -98,23 +98,18 @@ def handle_login(sock):
             return False
 
         # Receive login response
-        response = recv_line(sock)
+        response = sock_file.readline().strip()
         if not response:
-            #TODO : check if this should be the print
-            print("Server closed the connection.")
+            print("Error: didn't receive login response from the server.")
             return False
-
         print(response)
 
-        if response.startswith("Hi "):
-            # Login success
+        if response.startswith("Hi "): # Login success
             return True
-        elif response.startswith("Failed to login."):
-            # Login failed, try again
+        elif response.startswith("Failed to login."): # Login failed, try again
             continue
-        else:
-            #TODO: check if this should be the print
-            print("Protocol error during login. Closing.")
+        else: # Other error
+            print("Error: Protocol error during login.")
             return False
 
 
@@ -166,7 +161,7 @@ def is_valid_command(cmd):
     return False
 
 
-def command_loop(sock):
+def command_loop(sock, sock_file):
     """
     After successful login, handle the commands loop:
     - Read user input
@@ -179,8 +174,8 @@ def command_loop(sock):
         try:
             user_input = input()
         except EOFError:
-            #TODO: is this the way we should handle it?
-            # e.g. Ctrl+D
+            print("Client input stream closed (EOF). Closing connection.")
+            sock.sendall("quit\n".encode())
             break
 
         if not is_valid_command(user_input):
@@ -191,40 +186,46 @@ def command_loop(sock):
             try:
                 sock.sendall((user_input + "\n").encode())
             except Exception as e:
-                print(f"Error sending data: {e}")
+                print(f"Error sending data: {e}. Closing connection.")
             break
 
         try:
             sock.sendall((user_input + "\n").encode())
         except Exception as e:
-            print(f"Error sending data: {e}")
+            print(f"Error sending data: {e}. Closing connection.")
             break
 
-        # For 'quit', we still expect the server to possibly respond,
-        # but if it just closes, recv_line will return ''.
-        response = recv_line(sock)
+        # For 'quit', we still expect the server to possibly respond, but if it just closes, recv_line will return ''.
+        response = sock_file.readline().strip()
         if not response:
             print("Server closed the connection.")
             break
-
         print(response)
 
 
 def main():
-    hostname, port = parse_args() #TODO: host can be name (localhost) or IP
-
+    hostname, port = parse_args()
     sock = connect_to_server(hostname, port)
     if sock is None:
-        # TODO: decide what to do if connection fails
+        print("Error connecting to server, Closing connection")
         return
+
+    try:
+        sock_file = sock.makefile('r', encoding='utf-8')
+    except Exception as e:
+        print(f"Error creating file stream: {e}", file=sys.stderr)
+        sock.close()
+        return
+
     # Use 'with' so socket is closed automatically
-    with sock:
+    with sock, sock_file:
         try:
-            logged_in = handle_login(sock)
+            logged_in = handle_login(sock, sock_file)
             if not logged_in:
+                print("Error: login failed, Closing connection.")
                 return
 
-            command_loop(sock)
+            command_loop(sock, sock_file)
 
         except Exception as e:
             print(f"Client error: {e}")

@@ -75,7 +75,7 @@ def is_parentheses_balanced(s):
 
 def lcm(a, b):
     """
-    Compute least common multiple of two integers.
+    Compute the least common multiple of two integers.
     For 0, we define lcm(0, x) = 0.
     """
     if a == 0 or b == 0:
@@ -109,7 +109,12 @@ def create_listening_socket(port):
     """
     srv_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     srv_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    srv_sock.bind(("", port))
+    try:
+        srv_sock.bind(("", port))
+    except Exception:
+        print(f"Error binding socket to port: {port}")
+        srv_sock.close()
+        sys.exit(1)
     srv_sock.listen(BACKLOG) #TODO check if backlog value is ok
     return srv_sock
 
@@ -119,6 +124,7 @@ def main():
     users = load_users(users_file)
 
     server_sock = create_listening_socket(port)
+    _, port = server_sock.getsockname() # Get the actual port number
     print(f"Server listening on port {port}")
 
     # Sockets to monitor
@@ -216,7 +222,7 @@ def main():
             except ValueError:
                 close_client(sock)
                 return
-            result = lcm(x, y) #TODO check if lcm function is ok
+            result = lcm(x, y)
             resp = f"the lcm is: {result}\n"
             try:
                 sock.sendall(resp.encode())
@@ -259,7 +265,7 @@ def main():
         try:
             readable, _, _ = select.select(inputs, [], [])
         except Exception:
-            # Simple HW server: on select error we just continue
+            # Simple HW server, on select error we just continue
             continue
 
         for s in readable:
