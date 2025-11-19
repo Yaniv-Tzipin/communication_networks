@@ -54,7 +54,9 @@ Failed to login.
 
 Any message that does not follow this sequence → the server closes the connection.
 
-4. Supported Commands (after successful login)
+4. Supported Commands (after successful login):
+
+   
 1. parentheses: X
 
 Checks whether X is a balanced sequence of ( and ).
