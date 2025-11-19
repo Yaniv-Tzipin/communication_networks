@@ -15,7 +15,6 @@ def parse_args():
     """
     argc = len(sys.argv)
     if argc < 2 or argc > 3:
-        # TODO: check if this is how we should handle wrong args
         print("Usage: ex1_server.py users_file [port]")
         sys.exit(1)
 
@@ -115,7 +114,7 @@ def create_listening_socket(port):
         print(f"Error binding socket to port: {port}")
         srv_sock.close()
         sys.exit(1)
-    srv_sock.listen(BACKLOG) #TODO check if backlog value is ok
+    srv_sock.listen(BACKLOG)
     return srv_sock
 
 
@@ -194,7 +193,6 @@ def main():
         if stripped == "quit":
             close_client(sock)
             return
-        # TODO: should we also check here?
         # parentheses: X
         if line.startswith("parentheses:"):
             parts = line.split(" ", 1)
@@ -294,7 +292,7 @@ def main():
             else:
                 # Data from existing client
                 try:
-                    data = s.recv(RECV_BUF_SIZE) #TODO check buffer size
+                    data = s.recv(RECV_BUF_SIZE)
                 except Exception:
                     close_client(s)
                     continue
