@@ -49,7 +49,7 @@ Hi <username>, good to see you
 
 Otherwise:
 
-Failed to login.
+Failed to log in.
 
 
 Any message that does not follow this sequence → the server closes the connection.
