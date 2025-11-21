@@ -60,6 +60,7 @@ def load_users(users_file):
 def is_parentheses_balanced(s):
     """
     Check if a parentheses string is balanced.
+    Ignores non-parentheses characters.
     """
     stack = []
     for ch in s:
@@ -89,11 +90,11 @@ def caesar_cipher(plaintext, shift):
     If any character is not [A-Za-z ] -> return None (invalid input).
     """
     result = []
+    base = ord("a")
     for ch in plaintext:
         if ch == " ":
             result.append(" ")
         elif ch.isalpha():
-            base = ord("a")
             offset = (ord(ch.lower()) - base + shift) % 26
             result.append(chr(base + offset))
         else:

@@ -7,27 +7,30 @@ The server supports multiple concurrent clients using select() (no threads).
 Communication is line-based (\n at the end of each message).
 
 2. Usage
-Server
+
+The server script must run *before* running clients script 
+
+Server -
+
 ./ex1_server.py users_file [port]
 
 
 users_file – a text file containing username<TAB>password pairs
 
-port – optional; defaults to 1337
+port – optional, defaults to 1337
 
-Client
+Client -
+
 ./ex1_client.py [hostname [port]]
 
+hostname - optional, default is localhost, can be either an IP address or a string host name
 
-Defaults:
-
-hostname = localhost
-
-port = 1337
+port – optional, defaults to 1337
 
 Note: A port cannot be supplied without a hostname.
 
 3. Protocol Description
+
 3.1 Connection
 
 When a client connects, the server sends:
@@ -36,28 +39,26 @@ Welcome! Please log in
 
 3.2 Login
 
-The client must send exactly:
+The client must send to the server exactly:
 
-User: <username>
-Password: <password>
+User: \<username\>
 
+Password: \<password\>
 
-If the credentials match the users file:
+If the credentials match the users file, the server sends to the client:
 
-Hi <username>, good to see you
+Hi \<username\>, good to see you
 
-
-Otherwise:
+Otherwise, it sends:
 
 Failed to log in.
 
-
-Any message that does not follow this sequence → the server closes the connection.
+*If a message does not follow this sequence, or if the credentials does not match the users file
+→ the server sends to the client "Failed to log in." and let it try again.*
 
 4. Supported Commands (after successful login):
 
-   
-1. parentheses: X
+a. parentheses: X
 
 Checks whether X is a balanced sequence of ( and ).
 
@@ -69,7 +70,9 @@ or
 
 the parentheses are balanced: no
 
-2. lcm: X Y
+Note: The server ignores non-parentheses characters, so strings like "(X)" are acceptable.
+
+b. lcm: X Y
 
 Computes the least common multiple of integers X and Y.
 
@@ -77,23 +80,22 @@ Server responds:
 
 the lcm is: R
 
-3. caesar: plaintext X
+Note: The LCM in case X = 0 or Y = 0 is 0.
+
+c. caesar: plaintext X
 
 Applies a Caesar cipher shift of X to plaintext (result is lowercase).
 
-Example response:
+Example response: "the ciphertext is: Y"
 
-the ciphertext is: jgnnq
+If plaintext contains characters other than English letters or spaces: "error: invalid input"
 
-
-If plaintext contains characters other than English letters or spaces:
-
-error: invalid input
-
-4. quit
+d. quit
 
 Client requests to disconnect.
 The server closes the connection immediately (no response).
+
+e. For any other input at this point, the server closes the connection. 
 
 5. Error Handling
 
