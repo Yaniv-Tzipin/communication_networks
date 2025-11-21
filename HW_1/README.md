@@ -86,9 +86,9 @@ c. caesar: plaintext X
 
 Applies a Caesar cipher shift of X to plaintext (result is lowercase).
 
-Example response: "the ciphertext is: Y"
+For a valid input X, the output will be: "the ciphertext is: Y" (Y is ciphered X).
 
-If plaintext contains characters other than English letters or spaces: "error: invalid input"
+If plaintext contains characters other than English letters or spaces: "error: invalid input".
 
 d. quit
 
@@ -105,13 +105,27 @@ After login: any malformed command → server disconnects.
 
 Client also validates commands and disconnects on invalid input.
 
+Implementation Detail for Disconnection:
+
+When the server decides to disconnect a client (due to a 'quit' command or a malformed command),
+the server immediately closes the connection using the close() function on the client's socket.
+Then, the server removes this closed socket from the set of active sockets monitored by the select()
+system call to ensure it is no longer waiting for events from that client.
+
 6. Implementation Notes
 
 Transport: TCP via socket(AF_INET, SOCK_STREAM).
 
+We chose TCP because the application demands reliable and ordered data delivery.
+Critical operations like user login and command processing require every message to arrive correctly
+and in sequence to maintain the session state and logic.
+TCP's built-in error checking and sequence numbering guarantee this essential reliability,
+making it the most robust and efficient choice over UDP for this specific protocol.
+
 Server concurrency: handled using select() on the listening socket and all active client sockets.
 
-Protocol is line-based and each client maintains a small login state machine.
+Protocol is line-based (each message from both sides ends with \n)
+and each client maintains a small login state machine.
 
 Caesar cipher output is always lowercase.
 
