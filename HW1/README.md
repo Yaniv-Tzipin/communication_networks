@@ -1,4 +1,4 @@
-HW1:
+HW1: (Updated README in the pdf)
 
 1. Overview
 
